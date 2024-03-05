@@ -19,11 +19,12 @@ function dishExists(req,res,next){
       message:"dish doesn't exist"
     })
   }
+  res.locals.foundDish = foundDish;
   next()
 }
 function read(req,res,next){
   const dishId = req.params.dishId
-  const foundDish = dishes.find((dish) => dish.id === dishId)
+  const foundDish = res.locals.foundDish
   
   if(foundDish){
     res.send({data:foundDish})
@@ -39,7 +40,9 @@ function destroy(req,res,next){
   const index = dishes.findIndex((dish) => dish.id === dishId)
   
   if( index > -1){
+    res.locals.deletedDish = dishes[index]
     dishes.splice(index, 1)
+    next()
   }
   next({
     status:405,
@@ -182,7 +185,7 @@ const currentDish = dishes.find((dish) => dish.id === dishId)
 
 module.exports = {
   list,
-  read,
+  read:[dishExists,read],
   delete: destroy,
   update:[dishExists,idChecker,nameChecker, descriptionChecker,imgUrlChecker ,priceChecker, update],
   create:[nameChecker,descriptionChecker, imgUrlChecker,priceChecker, create],
